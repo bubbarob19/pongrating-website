@@ -1,20 +1,8 @@
+'use client';
+
 import Link from 'next/link';
-import React from 'react';
-
-type LeaderboardEntry = {
-    id: string;
-    name: string;
-    elo: number;
-    rank: string;
-    matchesPlayed: number;
-    winLossRatio: number;
-};
-
-async function getLeaderboardEntries() {
-    const res = await fetch('http://localhost:8080/api/leaderboards', { cache: 'no-store' });
-    const data: LeaderboardEntry[] = await res.json();
-    return data; // Data is assumed to be sorted by the backend
-}
+import React, {useEffect, useState} from 'react';
+import { apiRequest } from '@/utils/api';
 
 const rankColors: { [key: string]: string } = {
     NEWBIE: '#808080', // Gray
@@ -26,8 +14,37 @@ const rankColors: { [key: string]: string } = {
     GRANDMASTER: '#FF0000', // Red
 };
 
-const Leaderboards = async () => {
-    const leaderboardEntries = await getLeaderboardEntries();
+const Leaderboards = () => {
+    const [leaderboardEntries, setLeaderboardEntries] = useState<LeaderboardEntry[]>([]);
+    const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const data = await apiRequest<LeaderboardEntry[]>('api/leaderboards');
+                setLeaderboardEntries(data);
+                setLoading(false);
+            } catch (err) {
+                if (err instanceof Error) {
+                    setError(err.message);
+                } else {
+                    setError('An unknown error occurred');
+                }
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div>Error: {error}</div>;
+    }
 
     return (
         <div className="flex flex-col items-center justify-start min-h-screen py-10">
@@ -64,7 +81,7 @@ const Leaderboards = async () => {
                                 {entry.rank}
                             </td>
                             <td className="border px-4 py-2 text-center bg-gray-50">{entry.matchesPlayed}</td>
-                            <td className="border px-4 py-2 text-center bg-gray-50">{entry.winLossRatio.toFixed(2)}</td>
+                            <td className="border px-4 py-2 text-center bg-gray-50">{Number(entry.winLossRatio).toFixed(2)}</td>
                             <td className="border px-4 py-2 text-center bg-gray-50">
                                 <Link href={`/players/${entry.id}`} className="text-blue-500 hover:text-blue-700">
                                     View Profile
