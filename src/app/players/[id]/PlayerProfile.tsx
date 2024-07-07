@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     LineChart,
     Line,
@@ -13,6 +13,8 @@ import {
     ReferenceArea
 } from 'recharts';
 import { format, parseISO } from 'date-fns';
+import {apiRequest} from "@/utils/api";
+import CustomTooltip from "@/components/CustomTooltip";
 
 const rankColors: { [key: string]: string } = {
     NEWBIE: '#808080', // Gray
@@ -27,40 +29,61 @@ const rankColors: { [key: string]: string } = {
 const PlayerProfile = ({ id }: { id: string }) => {
     const [player, setPlayer] = useState<Player | null>(null);
 
-    useEffect(() => {
-        if (id) {
-            const fetchPlayer = async () => {
-                const url = `http://localhost:8080/api/players/${id}`;
-                console.log(`Fetching player data from: ${url}`);
-                try {
-                    const res = await fetch(url);
-                    if (!res.ok) {
-                        throw new Error(`HTTP error! Status: ${res.status}`);
-                    }
-                    const data = await res.json();
-                    setPlayer(data);
-                } catch (error) {
-                    console.error('Failed to fetch player data:', error);
-                }
-            };
-            fetchPlayer();
-        }
-    }, [id]);
+    const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
 
-    if (!player) return <div>Loading...</div>;
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const data = await apiRequest<Player>('api/players/' + id);
+                setPlayer(data);
+                setLoading(false);
+            } catch (err) {
+                if (err instanceof Error) {
+                    setError("Player not found");
+                } else {
+                    setError('An unknown error occurred');
+                }
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div>Error: {error}</div>;
+    }
+
+    if (!player) {
+        return <div>Error: player is null? check with dev</div>
+    }
 
     // Prepare data for the chart
-    let currentElo = player.displayElo;
     const eloHistory = player.matchHistory.map((match) => {
         const elo = match.winnerId === player.id
             ? match.winnerNewDisplayElo
             : match.loserNewDisplayElo;
-        currentElo = elo;
+        const eloChange = match.winnerId === player.id
+            ? "+" + match.winnerEloChange
+            : "-" + match.loserEloChange;
         return {
             date: parseISO(match.date).getTime(), // Convert date to timestamp
             displayElo: elo,
+            eloChange: eloChange
         };
-    }).reverse(); // Ensure the matches are in chronological order
+    }); // Ensure the matches are in chronological order
+
+    const indexedEloHistory: EloHistoryEntry[] = eloHistory.map((entry, index) => ({
+        ...entry,
+        index: index,
+        eloChange: entry.eloChange,
+        date: entry.date,
+    }));
 
     // Determine the y-axis domain
     const peakElo = Math.max(...eloHistory.map((entry) => entry.displayElo));
@@ -88,20 +111,17 @@ const PlayerProfile = ({ id }: { id: string }) => {
             <h2 className="text-2xl font-bold mt-6">ELO History</h2>
             <ResponsiveContainer width="100%" height={400}>
                 <LineChart
-                    data={eloHistory}
+                    data={indexedEloHistory}
                     margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                 >
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis
-                        dataKey="date"
+                        dataKey="index"
                         type="number"
                         domain={['dataMin', 'dataMax']}
-                        tickFormatter={(time) => format(new Date(time), 'dd MMM yyyy')}
                     />
                     <YAxis domain={[0, yAxisMax]} />
-                    <Tooltip
-                        labelFormatter={(label) => format(new Date(label), 'dd MMM yyyy')}
-                    />
+                    <Tooltip content={<CustomTooltip />} />
                     <Legend />
                     {rankRanges.map((range, index) => (
                         <ReferenceArea
@@ -115,6 +135,7 @@ const PlayerProfile = ({ id }: { id: string }) => {
                     <Line
                         type="monotone"
                         dataKey="displayElo"
+                        name={"Elo"}
                         stroke="#8884d8"
                         dot={{ r: 6 }}
                         activeDot={{ r: 8 }}
@@ -136,11 +157,11 @@ const PlayerProfile = ({ id }: { id: string }) => {
                     </tr>
                     </thead>
                     <tbody>
-                    {player.matchHistory.map((match, index) => (
+                    {player.matchHistory.slice().reverse().map((match, index) => (
                         <tr key={index} className="hover:bg-gray-100">
                             <td className="border px-4 py-2">{format(parseISO(match.date), 'dd MMM yyyy')}</td>
-                            <td className="border px-4 py-2">{match.winnerId}</td>
-                            <td className="border px-4 py-2">{match.loserId}</td>
+                            <td className="border px-4 py-2">{match.winnerName}</td>
+                            <td className="border px-4 py-2">{match.loserName}</td>
                             <td className="border px-4 py-2 text-center">{match.winnerScore}</td>
                             <td className="border px-4 py-2 text-center">{match.loserScore}</td>
                             <td className="border px-4 py-2 text-center">{match.winnerEloChange}</td>

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {getToken, removeToken, removeUserCredentials, setToken, setUserCredentials} from '@/utils/auth'; // Import token management functions from auth.ts
+import {getToken, register, removeToken, removeUserCredentials, setToken, setUserCredentials} from '@/utils/auth'; // Import token management functions from auth.ts
 import { apiRequest } from '@/utils/api';
 
 const LoginPage = () => {
@@ -46,19 +46,9 @@ const LoginPage = () => {
     const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         try {
-            const response = await apiRequest<{ token: string }>('api/auth/register', {
-                method: 'POST',
-                body: JSON.stringify({
-                    firstName: regFirstName,
-                    lastName: regLastName,
-                    email: regEmail,
-                    password: regPassword,
-                    inviteCode: regInviteCode,
-                }),
-                skipAuth: true
-            });
+            const response = register(regFirstName, regLastName, regEmail, regPassword, regInviteCode);
 
-            handleLoginSuccess(response.token);
+            handleLoginSuccess(await response);
         } catch (err) {
             // @ts-ignore
             setError(err.message as string);
@@ -74,6 +64,7 @@ const LoginPage = () => {
         setUserCredentials(loginEmail, loginPassword);
 
         // Navigate to dashboard or desired page
+        localStorage.setItem('successMessage', 'You are now logged in!');
         router.push('/');
     };
 
@@ -84,7 +75,8 @@ const LoginPage = () => {
         removeUserCredentials();
 
         // Navigate to login page
-        router.push('/login');
+        localStorage.setItem('successMessage', 'You logged out successfully!');
+        router.push('/');
     };
 
     return (

@@ -18,8 +18,8 @@ const NavBar = () => {
                     <Link href="/leaderboards" className={`px-3 py-2 rounded ${getLinkClass('/leaderboards')}`}>
                         Leaderboards
                     </Link>
-                    <Link href="/players" className={`px-3 py-2 rounded ${getLinkClass('/players')}`}>
-                        Players
+                    <Link href="/match" className={`px-3 py-2 rounded ${getLinkClass('/match')}`}>
+                        Submit Match
                     </Link>
                     <Link href="/login" className={`px-3 py-2 rounded ${getLinkClass('/login')}`}>
                         Login

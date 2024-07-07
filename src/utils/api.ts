@@ -21,21 +21,21 @@ export async function apiRequest<T>(url: string, options?: RequestOptions): Prom
             headers['Authorization'] = `Bearer ${token}`;
         }
 
-        const response = await fetch(`http://localhost:8080/${url}`, {
+        const response = await fetch(process.env["NEXT_PUBLIC_API_URL"] + "/" + url, {
             ...options,
             headers,
         });
 
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error(await response.text());
         }
 
         return await response.json() as T;
     } catch (error) {
         if (error instanceof Error) {
-            throw new Error(`API request failed: ${error.message}`);
+            throw new Error(`${error.message}`);
         } else {
-            throw new Error('API request failed: Unknown error occurred');
+            throw new Error('Unknown error occurred');
         }
     }
 }
