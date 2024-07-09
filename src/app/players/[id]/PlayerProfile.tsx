@@ -15,7 +15,7 @@ import {
 import { format, parseISO } from 'date-fns';
 import {apiRequest} from "@/utils/api";
 import CustomTooltip from "@/components/CustomTooltip";
-import {parseRank} from "@/app/leaderboards/page";
+import {parseRank} from "@/utils/utils";
 
 const rankColors: { [key: string]: string } = {
     NEWBIE: '#808080', // Gray

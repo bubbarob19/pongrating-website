@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import React, {useEffect, useState} from 'react';
 import {apiRequest} from '@/utils/api';
+import {parseRank} from "@/utils/utils";
 
 const rankColors: { [key: string]: string } = {
     NEWBIE: '#808080', // Gray
@@ -13,10 +14,6 @@ const rankColors: { [key: string]: string } = {
     MASTER: '#FFA500', // Orange
     GRANDMASTER: '#FF0000', // Red
 };
-
-export function parseRank(rank: string): string {
-    return rank.replace(/_/g, ' ');
-}
 
 const Leaderboards = () => {
     const [leaderboardEntries, setLeaderboardEntries] = useState<LeaderboardEntry[]>([]);
