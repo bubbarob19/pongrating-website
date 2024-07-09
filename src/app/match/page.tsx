@@ -39,6 +39,10 @@ const SubmitMatchPage = () => {
                 setError('One of the scores must be >= 21.');
                 return;
             }
+            if (playerId == opponentId) {
+                setError('You cannot submit a match against yourself.');
+                return;
+            }
 
             const matchData = {
                 date: new Date(),
