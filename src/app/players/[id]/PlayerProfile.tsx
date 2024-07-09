@@ -15,6 +15,7 @@ import {
 import { format, parseISO } from 'date-fns';
 import {apiRequest} from "@/utils/api";
 import CustomTooltip from "@/components/CustomTooltip";
+import {parseRank} from "@/app/leaderboards/page";
 
 const rankColors: { [key: string]: string } = {
     NEWBIE: '#808080', // Gray
@@ -69,12 +70,19 @@ const PlayerProfile = ({ id }: { id: string }) => {
             ? match.winnerNewDisplayElo
             : match.loserNewDisplayElo;
         const eloChange = match.winnerId === player.id
-            ? "+" + match.winnerEloChange
-            : "-" + match.loserEloChange;
+            ? match.winnerEloChange
+            : match.loserEloChange;
+        let eloChangeString;
+        if (eloChange == 0)
+            eloChangeString = "0";
+        else if (eloChange > 0)
+            eloChangeString = "+" + eloChange
+        else
+            eloChangeString = "" + eloChange
         return {
             date: parseISO(match.date).getTime(), // Convert date to timestamp
             displayElo: elo,
-            eloChange: eloChange
+            eloChange: eloChangeString
         };
     }); // Ensure the matches are in chronological order
 
@@ -91,21 +99,20 @@ const PlayerProfile = ({ id }: { id: string }) => {
 
     // Define the rank ranges and their colors
     const rankRanges = [
-        { min: 0, max: 1200, color: rankColors.NEWBIE },
-        { min: 1200, max: 1400, color: rankColors.PUPIL },
-        { min: 1400, max: 1600, color: rankColors.SPECIALIST },
-        { min: 1600, max: 1800, color: rankColors.EXPERT },
-        { min: 1800, max: 2000, color: rankColors.CANDIDATE_MASTER },
-        { min: 2000, max: 2400, color: rankColors.MASTER },
-        { min: 2400, max: 3000, color: rankColors.GRANDMASTER },
+        { min: 0, max: 1000, color: rankColors.NEWBIE },
+        { min: 1000, max: 1200, color: rankColors.PUPIL },
+        { min: 1200, max: 1400, color: rankColors.SPECIALIST },
+        { min: 1400, max: 1600, color: rankColors.EXPERT },
+        { min: 1600, max: 1800, color: rankColors.CANDIDATE_MASTER },
+        { min: 1800, max: 2000, color: rankColors.MASTER },
+        { min: 2000, max: 3000, color: rankColors.GRANDMASTER },
     ];
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen py-2">
             <h1 className="text-4xl font-bold">{player.firstName} {player.lastName}</h1>
-            <p className="mt-4">ELO: {player.elo}</p>
-            <p className="mt-4">Display ELO: {player.displayElo}</p>
-            <p className="mt-4">Rank: {player.rank}</p>
+            <p className="mt-4">ELO: {player.displayElo}</p>
+            <p className="mt-4">Rank: {parseRank(player.rank)}</p>
             <p className="mt-4">Wins: {player.wins}</p>
             <p className="mt-4">Losses: {player.losses}</p>
             <h2 className="text-2xl font-bold mt-6">ELO History</h2>

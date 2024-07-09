@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import React, {useEffect, useState} from 'react';
-import { apiRequest } from '@/utils/api';
+import {apiRequest} from '@/utils/api';
 
 const rankColors: { [key: string]: string } = {
     NEWBIE: '#808080', // Gray
@@ -13,6 +13,10 @@ const rankColors: { [key: string]: string } = {
     MASTER: '#FFA500', // Orange
     GRANDMASTER: '#FF0000', // Red
 };
+
+export function parseRank(rank: string): string {
+    return rank.replace(/_/g, ' ');
+}
 
 const Leaderboards = () => {
     const [leaderboardEntries, setLeaderboardEntries] = useState<LeaderboardEntry[]>([]);
@@ -78,7 +82,7 @@ const Leaderboards = () => {
                                 className="border px-4 py-2 text-center"
                                 style={{ backgroundColor: rankColors[entry.rank] || '#ffffff' }}
                             >
-                                {entry.rank}
+                                {parseRank(entry.rank)}
                             </td>
                             <td className="border px-4 py-2 text-center bg-gray-50">{entry.matchesPlayed}</td>
                             <td className="border px-4 py-2 text-center bg-gray-50">{Number(entry.winLossRatio).toFixed(2)}</td>

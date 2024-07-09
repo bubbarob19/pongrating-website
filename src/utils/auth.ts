@@ -2,12 +2,12 @@ import Cookies from 'js-cookie';
 import {apiRequest} from '@/utils/api';
 
 const TOKEN_KEY = 'jwt_token';
+const REFRESH_TOKEN_KEY = 'refresh_token';
 const EMAIL_KEY = 'user_email';
-const PASSWORD_KEY = 'user_password';
-const PLAYER_ID_KEY = 'player_id'
+const PLAYER_ID_KEY = 'player_id';
 
 export function setToken(token: string) {
-    Cookies.set(TOKEN_KEY, token, { expires: 1 }); // Set cookie for 1 day
+    Cookies.set(TOKEN_KEY, token);
 }
 
 export function getToken(): string | undefined {
@@ -18,47 +18,90 @@ export function removeToken() {
     Cookies.remove(TOKEN_KEY);
 }
 
-export function setUserCredentials(email: string, password: string) {
+export function setRefreshToken(refreshToken: string) {
+    Cookies.set(REFRESH_TOKEN_KEY, refreshToken);
+}
+
+export function getRefreshToken(): string | undefined {
+    return Cookies.get(REFRESH_TOKEN_KEY);
+}
+
+export function removeRefreshToken() {
+    Cookies.remove(REFRESH_TOKEN_KEY);
+}
+
+export function setUserEmail(email: string) {
     Cookies.set(EMAIL_KEY, email, { expires: 1 });
-    Cookies.set(PASSWORD_KEY, password, { expires: 1 });
+}
+
+export function getUserEmail(): string | undefined {
+    return Cookies.get(EMAIL_KEY);
 }
 
 export function setPlayerId(id: string) {
     Cookies.set(PLAYER_ID_KEY, id, { expires: 1 });
 }
 
-export function getPlayerId() {
+export function getPlayerId(): string | undefined {
     return Cookies.get(PLAYER_ID_KEY);
 }
 
-export function removeUserCredentials() {
+export function removeUserEmail() {
     Cookies.remove(EMAIL_KEY);
-    Cookies.remove(PASSWORD_KEY);
 }
 
-export async function authenticate() {
-    const email = Cookies.get(EMAIL_KEY);
-    const password = Cookies.get(PASSWORD_KEY);
+export function removePlayerId() {
+    Cookies.remove(PLAYER_ID_KEY);
+}
 
-    if (!email || !password) {
+export async function authenticate(email: string, password: string) {
+    try {
+        const response = await apiRequest<AuthResponse>('api/auth/authenticate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password }),
+            skipAuth: true,
+        });
+
+        setToken(response.accessToken);
+        setRefreshToken(response.refreshToken);
+        setUserEmail(email);
+        setPlayerId(response.playerId);
+
+        return response;
+    } catch (error) {
         throw new Error('Authentication failed.');
+    }
+}
+
+export async function refreshToken() {
+    const refreshToken = getRefreshToken();
+    const email = getUserEmail();
+
+    if (!refreshToken || !email) {
+        throw new Error('Refresh token is missing.');
     }
 
     try {
-        const response = await apiRequest<{ token: string, playerId: string }>('api/auth/authenticate', {
+        const response = await apiRequest<AuthResponse>('api/auth/refresh-token', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ email, password }),
-            skipAuth: true
+            body: JSON.stringify({ email, refreshToken }),
+            skipAuth: true,
         });
 
-        setToken(response.token);
-        setPlayerId(response.playerId);
-        return response.token;
+        setToken(response.accessToken);
+        setRefreshToken(response.refreshToken);
+        setPlayerId(response.playerId)
+        setUserEmail(email);
+
+        return response;
     } catch (error) {
-        throw new Error('Authentication failed.');
+        throw new Error('Token refresh failed. Please log in again.');
     }
 }
 
@@ -67,44 +110,57 @@ export async function register(
     lastName: string,
     email: string,
     password: string,
-    inviteCode: string)
-{
-    const response = await apiRequest<{ token: string }>('api/auth/register', {
+    inviteCode: string
+) {
+    const response = await apiRequest<AuthResponse>('api/auth/register', {
         method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
-            firstName: firstName,
-            lastName: lastName,
-            email: email,
-            password: password,
-            inviteCode: inviteCode,
+            firstName,
+            lastName,
+            email,
+            password,
+            inviteCode,
         }),
-        skipAuth: true
+        skipAuth: true,
     });
-    return response.token;
+
+    setToken(response.accessToken);
+    setRefreshToken(response.refreshToken);
+    setPlayerId(response.playerId)
+    setUserEmail(email);
+
+    return response;
 }
 
-export async function getValidToken(): Promise<string> {
+export async function getValidToken(): Promise<string | undefined> {
     let token = getToken();
 
-    if (!token) {
-        token = await authenticate();
-    } else {
-        try {
-            const response = await apiRequest<{ valid: boolean }>('api/auth/validate-token', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                skipAuth: true
-            });
+    try {
+        if (!token) {
+            token = (await refreshToken()).accessToken;
+        } else {
+            try {
+                const response = await apiRequest<{ valid: boolean }>('api/auth/validate-token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                    skipAuth: true,
+                });
 
-            if (!response.valid) {
-                token = await authenticate();
+                if (!response.valid) {
+                    (await refreshToken()).accessToken;
+                }
+            } catch {
+                (await refreshToken()).accessToken;
             }
-        } catch {
-            token = await authenticate();
         }
+    } catch (error) {
+        token = undefined
     }
 
     return token;
