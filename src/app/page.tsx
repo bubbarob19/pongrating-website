@@ -19,11 +19,6 @@ export default function Home() {
 
   return (
       <>
-        <Head>
-          <title>J.B. Hunt Ping Pong ELO</title>
-          <meta property="og:title" content="J.B. Hunt Ping Pong ELO"/>
-          <meta property="og:description" content="J.B. Hunt Ping Pong ELO Website"/>
-        </Head>
         <main>
           <div className="flex min-h-screen flex-col items-center p-12">
             {successMessage && (
