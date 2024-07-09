@@ -13,18 +13,21 @@ const SubmitMatchPage = () => {
     const [playerScore, setPlayerScore] = useState('');
     const [players, setPlayers] = useState<Player[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
         const fetchPlayers = async () => {
             try {
                 const data = await apiRequest<Player[]>('api/players');
                 setPlayers(data);
+                setLoading(false);
             } catch (err) {
                 if (err instanceof Error) {
                     setError(err.message);
                 } else {
                     setError('An unknown error occurred');
                 }
+                setLoading(false);
             }
         };
 
@@ -70,8 +73,16 @@ const SubmitMatchPage = () => {
         }
     };
 
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
     if (error) {
         return <div>Error: {error}</div>;
+    }
+
+    if (!players || players.length == 0) {
+        return <div>Sorry! You can&apos;t see this unless you are logged in!</div>;
     }
 
     return (

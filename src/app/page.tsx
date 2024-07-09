@@ -52,20 +52,19 @@ export default function Home() {
               <li>
                 All these factors play a role in your rating change in a match. The ranking system and displayed ELO
                 work slightly differently - everyone starts at an ELO of 0, but the ELO used for match calculations is
-                actually 1400. Through your first 6 matches, you will be &quot;gaining&quot; these points back. This system is
+                actually 1200. Through your first 7 matches, you will be &quot;gaining&quot; these points back. This system is
                 similar to the one used in Codeforces. Read more about it <a
                   href="https://codeforces.com/blog/entry/77890" className="text-blue-500 underline">here</a>.
               </li>
               <li>
                 Your rank is based on your ELO range. These ranks are based loosely on Codeforces and don&apos;t have any
-                other effect than determining your self-worth as a ping pong player.
+                other effect than determining the entirety of your self-worth as a ping pong player...
               </li>
             </ul>
             <h2 className="text-2xl font-bold mb-4">Match Rules:</h2>
             <ul className="list-disc list-inside mb-6">
               <li>Games are to 21, play deuce if you both get there</li>
               <li>Switch serves every 2 or 5, depending on preference of you and your opponent</li>
-              <li>Other rules from the J.B. Hunt summer ping pong tournament apply</li>
               <li>If you have any concerns or questions, please contact me</li>
             </ul>
             <h2 className="text-2xl font-bold mb-4">Once a Match is Completed:</h2>

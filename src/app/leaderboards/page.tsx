@@ -47,6 +47,10 @@ const Leaderboards = () => {
         return <div>Error: {error}</div>;
     }
 
+    if (!leaderboardEntries || leaderboardEntries.length == 0) {
+        return <div>Sorry! You can&apos;t see this unless you are logged in!</div>;
+    }
+
     return (
         <div className="flex flex-col items-center justify-start min-h-screen py-10">
             <div className="w-full max-w-6xl flex justify-between items-center mb-8">
