@@ -46,18 +46,18 @@ export default function Home() {
                 <ul className="list-disc list-inside ml-5">
                   <li>Whether you win or lose</li>
                   <li>How much you win or lose by</li>
-                  <li>Your rating and your opponent's rating</li>
+                  <li>Your rating and your opponent&apos;s rating</li>
                 </ul>
               </li>
               <li>
                 All these factors play a role in your rating change in a match. The ranking system and displayed ELO
                 work slightly differently - everyone starts at an ELO of 0, but the ELO used for match calculations is
-                actually 1400. Through your first 6 matches, you will be "gaining" these points back. This system is
+                actually 1400. Through your first 6 matches, you will be &quot;gaining&quot; these points back. This system is
                 similar to the one used in Codeforces. Read more about it <a
                   href="https://codeforces.com/blog/entry/77890" className="text-blue-500 underline">here</a>.
               </li>
               <li>
-                Your rank is based on your ELO range. These ranks are based loosely on Codeforces and don't have any
+                Your rank is based on your ELO range. These ranks are based loosely on Codeforces and don&apos;t have any
                 other effect than determining your self-worth as a ping pong player.
               </li>
             </ul>
@@ -70,12 +70,12 @@ export default function Home() {
             </ul>
             <h2 className="text-2xl font-bold mb-4">Once a Match is Completed:</h2>
             <ul className="list-disc list-inside mb-6">
-              <li>Either you OR your opponent will submit your scores on the "Submit Match" page.</li>
+              <li>Either you OR your opponent will submit your scores on the &quot;Submit Match&quot; page.</li>
               <li>NOTE: NOT BOTH! JUST ONE OF YOU! Communicate with your opponent about who will submit.</li>
-              <li>We are on the honor system here! Please don't cheat.</li>
+              <li>We are on the honor system here! Please don&apos;t cheat.</li>
               <li>Once you submit your match, view the leaderboards page to see where you rank against other interns!
               </li>
-              <li>View your profile or other players' profiles to see your/their match history and stats.</li>
+              <li>View your profile or other players&apos; profiles to see your/their match history and stats.</li>
             </ul>
           </div>
         </div>
